@@ -13,8 +13,22 @@ from rest_framework.decorators import api_view
 class BlogListCreateAPIView(APIView):
     def get(self, request, pk=None):
         blogs = Blog.objects.all()
+        title = request.query_params.get("title", None)
+        desc = request.query_params.get("title", None)
+        if title:
+            blogs = blogs.filter(title__icontains=title)
+        if desc:
+            blogs = blogs.filter(title__icontains=desc)
+
         serializer = BlogSerializer(blogs, many=True)
         return Response(serializer.data)
+
+    def post(self, request):
+        serializer = BlogSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class BlogRetriveUpdateDeleteAPIView(APIView):
@@ -23,13 +37,6 @@ class BlogRetriveUpdateDeleteAPIView(APIView):
             blog = get_object_or_404(Blog, id=pk)
             serializer = BlogSerializer(blog)
             return Response(serializer.data)
-
-    def post(self, request):
-        serializer = BlogSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def put(self, request, pk):
         blog = get_object_or_404(Blog, id=pk)
@@ -44,21 +51,3 @@ class BlogRetriveUpdateDeleteAPIView(APIView):
         blog.delete()
         return Response({"success": "Blog deleted"}, status=status.HTTP_204_NO_CONTENT)
 
-
-@api_view(['GET'])
-def search_blogs(request):
-    # /api/v1/blogs/search/?title={}&desc={}
-    title = request.query_params.get('title')
-    desc = request.query_params.get('desc')
-
-    if title and desc:
-        blogs = Blog.objects.filter(Q(title__icontains=title), Q(description__icontains=desc))
-    elif title:
-        blogs = Blog.objects.filter(title__icontains=title)
-    elif desc:
-        blogs = Blog.objects.filter(description__icontains=desc)
-    else:
-        blogs = Blog.objects.all()
-
-    serializer = BlogSerializer(blogs, many=True)
-    return Response(serializer.data)
