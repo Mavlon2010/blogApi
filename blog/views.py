@@ -5,9 +5,7 @@ from django.db.models import Q
 from rest_framework.views import APIView
 
 from blog.models import Blog
-from blog.serializers import BlogSerializer, mobileBlogDetailSerializer, mobileBlogListSerializer, \
-    mobileBlogSearchSerializer
-from rest_framework.decorators import api_view
+from blog.serializers import BlogSerializer
 
 
 class BlogListCreateAPIView(APIView):
@@ -50,4 +48,3 @@ class BlogRetriveUpdateDeleteAPIView(APIView):
         blog = get_object_or_404(Blog, id=pk)
         blog.delete()
         return Response({"success": "Blog deleted"}, status=status.HTTP_204_NO_CONTENT)
-
